@@ -1,0 +1,13 @@
+def zoom_nearest(img, scale):
+    h,w = img.shape[:2]
+    new = np.zeros((int(h*scale), int(w*scale),3),dtype=img.dtype)
+    for i in range(new.shape[0]):
+        for j in range(new.shape[1]):
+            new[i,j] = img[int(i/scale), int(j/scale)]
+    return new
+
+def zoom_bilinear(img, scale):
+    return cv2.resize(img,None,fx=scale,fy=scale,interpolation=cv2.INTER_LINEAR)
+
+zoom1 = zoom_nearest((img*255).astype(np.uint8),2)
+zoom2 = zoom_bilinear((img*255).astype(np.uint8),2)
