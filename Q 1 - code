@@ -1,0 +1,37 @@
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Read image
+img = cv2.imread('runway.jpg')
+img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB) / 255.0  # normalize
+
+# ---------- Gamma Correction ----------
+def gamma_correction(image, gamma):
+    return np.power(image, gamma)
+
+gamma_05 = gamma_correction(img, 0.5)
+gamma_2 = gamma_correction(img, 2)
+
+# ---------- Contrast Stretching ----------
+def contrast_stretch(image, r1=0.2, r2=0.8):
+    s = np.zeros_like(image)
+    s[image < r1] = 0
+    s[image > r2] = 1
+    mask = (image >= r1) & (image <= r2)
+    s[mask] = (image[mask] - r1) / (r2 - r1)
+    return s
+
+contrast_img = contrast_stretch(img)
+
+# Display
+titles = ['Original','Gamma 0.5','Gamma 2','Contrast Stretch']
+images = [img, gamma_05, gamma_2, contrast_img]
+
+plt.figure(figsize=(10,8))
+for i in range(4):
+    plt.subplot(2,2,i+1)
+    plt.imshow(images[i])
+    plt.title(titles[i])
+    plt.axis('off')
+plt.show()
