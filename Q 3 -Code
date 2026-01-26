@@ -1,0 +1,13 @@
+def hist_equalization(gray):
+    hist, bins = np.histogram(gray.flatten(),256,[0,256])
+    cdf = hist.cumsum()
+    cdf_norm = cdf * 255 / cdf[-1]
+    eq_img = np.interp(gray.flatten(), bins[:-1], cdf_norm)
+    return eq_img.reshape(gray.shape).astype(np.uint8)
+
+gray = cv2.cvtColor((img*255).astype(np.uint8), cv2.COLOR_RGB2GRAY)
+equalized = hist_equalization(gray)
+
+plt.imshow(equalized, cmap='gray')
+plt.title("Manual Histogram Equalized")
+plt.axis('off')
