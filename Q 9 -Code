@@ -1,0 +1,6 @@
+kernel_sharp = np.array([[0,-1,0],[-1,5,-1],[0,-1,0]])
+sharp = cv2.filter2D(gray,-1,kernel_sharp)
+
+plt.imshow(sharp,cmap='gray')
+plt.title("Sharpened")
+plt.show()
