@@ -1,0 +1,17 @@
+def dog_kernel(size, sigma, direction='x'):
+    ax = np.linspace(-(size-1)/2., (size-1)/2., size)
+    xx, yy = np.meshgrid(ax, ax)
+    G = np.exp(-(xx**2 + yy**2)/(2*sigma**2))
+    if direction == 'x':
+        return -xx/(sigma**2) * G
+    else:
+        return -yy/(sigma**2) * G
+
+kx = dog_kernel(5,2,'x')
+ky = dog_kernel(5,2,'y')
+
+grad_x = cv2.filter2D(gray,-1,kx)
+grad_y = cv2.filter2D(gray,-1,ky)
+
+sobelx = cv2.Sobel(gray,cv2.CV_64F,1,0,ksize=5)
+sobely = cv2.Sobel(gray,cv2.CV_64F,0,1,ksize=5)
