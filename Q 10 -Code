@@ -1,0 +1,18 @@
+def bilateral_filter(img, d, sigma_s, sigma_r):
+    img = img.astype(np.float32)
+    out = np.zeros_like(img)
+    pad = d//2
+    padded = np.pad(img, pad, mode='reflect')
+
+    for i in range(img.shape[0]):
+        for j in range(img.shape[1]):
+            region = padded[i:i+d, j:j+d]
+            gs = gaussian_kernel(d, sigma_s)
+            gr = np.exp(-(region - img[i,j])**2/(2*sigma_r**2))
+            w = gs * gr
+            out[i,j] = np.sum(w*region)/np.sum(w)
+
+    return out.astype(np.uint8)
+
+bilat_manual = bilateral_filter(gray,5,3,25)
+bilat_cv = cv2.bilateralFilter(gray,5,75,75)
