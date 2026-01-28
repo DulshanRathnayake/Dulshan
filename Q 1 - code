@@ -1,37 +1,58 @@
+from google.colab import drive
+drive.mount('/content/drive')
+
+!git clone https://github.com/DulshanRathnayake/Dulshan.git
+
+%cd Image-Processing-Assignment-1/
+
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Read image
-img = cv2.imread('runway.jpg')
-img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB) / 255.0  # normalize
+# Load image in grayscale
+img = cv2.imread("/content/1.jpeg", cv2.IMREAD_GRAYSCALE)
 
-# ---------- Gamma Correction ----------
-def gamma_correction(image, gamma):
-    return np.power(image, gamma)
+# Convert to float and normalize to [0,1]
+img_norm = img.astype(np.float32) / 255.0
 
-gamma_05 = gamma_correction(img, 0.5)
-gamma_2 = gamma_correction(img, 2)
+plt.figure(figsize=(5,5))
+plt.imshow(img_norm, cmap='gray')
+plt.title("Original Image (Normalized)")
+plt.axis("off")
+plt.show()
 
-# ---------- Contrast Stretching ----------
-def contrast_stretch(image, r1=0.2, r2=0.8):
-    s = np.zeros_like(image)
-    s[image < r1] = 0
-    s[image > r2] = 1
-    mask = (image >= r1) & (image <= r2)
-    s[mask] = (image[mask] - r1) / (r2 - r1)
-    return s
+gamma_05 = 0.5
+img_gamma_05 = np.power(img_norm, gamma_05)
 
-contrast_img = contrast_stretch(img)
+plt.figure(figsize=(5,5))
+plt.imshow(img_gamma_05, cmap='gray')
+plt.title("Gamma Correction (γ = 0.5)")
+plt.axis("off")
+plt.show()
 
-# Display
-titles = ['Original','Gamma 0.5','Gamma 2','Contrast Stretch']
-images = [img, gamma_05, gamma_2, contrast_img]
+gamma_2 = 2.0
+img_gamma_2 = np.power(img_norm, gamma_2)
 
-plt.figure(figsize=(10,8))
-for i in range(4):
-    plt.subplot(2,2,i+1)
-    plt.imshow(images[i])
-    plt.title(titles[i])
-    plt.axis('off')
+plt.figure(figsize=(5,5))
+plt.imshow(img_gamma_2, cmap='gray')
+plt.title("Gamma Correction (γ = 2)")
+plt.axis("off")
+plt.show()
+
+r1 = 0.2
+r2 = 0.8
+
+# Initialize output image
+img_contrast = np.zeros_like(img_norm)
+
+# Apply piecewise transformation
+img_contrast[img_norm < r1] = 0
+img_contrast[(img_norm >= r1) & (img_norm <= r2)] = \
+    (img_norm[(img_norm >= r1) & (img_norm <= r2)] - r1) / (r2 - r1)
+img_contrast[img_norm > r2] = 1
+
+plt.figure(figsize=(5,5))
+plt.imshow(img_contrast, cmap='gray')
+plt.title("Contrast Stretching")
+plt.axis("off")
 plt.show()
