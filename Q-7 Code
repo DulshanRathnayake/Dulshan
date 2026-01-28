@@ -1,13 +1,121 @@
-def zoom_nearest(img, scale):
-    h,w = img.shape[:2]
-    new = np.zeros((int(h*scale), int(w*scale),3),dtype=img.dtype)
-    for i in range(new.shape[0]):
-        for j in range(new.shape[1]):
-            new[i,j] = img[int(i/scale), int(j/scale)]
-    return new
+from google.colab import drive
+drive.mount('/content/drive')
 
-def zoom_bilinear(img, scale):
-    return cv2.resize(img,None,fx=scale,fy=scale,interpolation=cv2.INTER_LINEAR)
+!git clone https://github.com/DulshanRathnayake/Dulshan.git 
 
-zoom1 = zoom_nearest((img*255).astype(np.uint8),2)
-zoom2 = zoom_bilinear((img*255).astype(np.uint8),2)
+%cd Image-Processing-Assignment-1/
+
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+
+img_large = cv2.imread("/content/looking_out.jpg", cv2.IMREAD_GRAYSCALE)
+img_small = cv2.imread("/content/looking_out.jpg", cv2.IMREAD_GRAYSCALE)
+
+plt.figure(figsize=(8,4))
+plt.subplot(1,2,1)
+plt.imshow(img_small, cmap='gray')
+plt.title("Small Image")
+plt.axis("off")
+
+plt.subplot(1,2,2)
+plt.imshow(img_large, cmap='gray')
+plt.title("Original Large Image")
+plt.axis("off")
+
+plt.tight_layout()
+plt.show()
+
+def zoom_nearest(image, target_shape):
+    h_orig, w_orig = image.shape
+    new_h, new_w = target_shape
+
+    zoomed = np.zeros((new_h, new_w), dtype=image.dtype)
+
+    # Calculate scaling factors for mapping target coordinates back to original
+    scale_h = h_orig / new_h
+    scale_w = w_orig / new_w
+
+    for i in range(new_h):
+        for j in range(new_w):
+            src_x = int(i * scale_h)
+            src_y = int(j * scale_w)
+            src_x = min(src_x, h_orig - 1) # Clamp to max index
+            src_y = min(src_y, w_orig - 1) # Clamp to max index
+            zoomed[i, j] = image[src_x, src_y]
+
+    return zoomed
+
+def zoom_bilinear(image, target_shape):
+    h_orig, w_orig = image.shape
+    new_h, new_w = target_shape
+
+    zoomed = np.zeros((new_h, new_w), dtype=np.float32)
+
+    # Calculate scaling factors for mapping target coordinates back to original
+    scale_h = h_orig / new_h
+    scale_w = w_orig / new_w
+
+    for i in range(new_h):
+        for j in range(new_w):
+            # Map target coordinate (i, j) back to original float coordinates (x, y)
+            x = i * scale_h
+            y = j * scale_w
+
+            # Get the 4 surrounding pixel coordinates
+            x1 = int(np.floor(x))
+            y1 = int(np.floor(y))
+            x2 = min(x1 + 1, h_orig - 1)
+            y2 = min(y1 + 1, w_orig - 1)
+
+            # Calculate interpolation weights
+            a = x - x1
+            b = y - y1
+
+            # Bilinear interpolation
+            zoomed[i, j] = (
+                (1 - a) * (1 - b) * image[x1, y1] +
+                a * (1 - b) * image[x2, y1] +
+                (1 - a) * b * image[x1, y2] +
+                a * b * image[x2, y2]
+            )
+
+    return np.uint8(zoomed)
+
+# Get the target shape from img_large
+target_shape = img_large.shape
+
+zoom_nn = zoom_nearest(img_small, target_shape)
+zoom_bilinear_img = zoom_bilinear(img_small, target_shape)
+
+plt.figure(figsize=(12,4))
+
+plt.subplot(1,3,1)
+plt.imshow(img_large, cmap='gray')
+plt.title("Original Large")
+plt.axis("off")
+
+plt.subplot(1,3,2)
+plt.imshow(zoom_nn, cmap='gray')
+plt.title("Nearest Neighbor Zoom")
+plt.axis("off")
+
+plt.subplot(1,3,3)
+plt.imshow(zoom_bilinear_img, cmap='gray')
+plt.title("Bilinear Zoom")
+plt.axis("off")
+
+plt.tight_layout()
+plt.show()
+
+def normalized_ssd(img1, img2):
+    diff = img1.astype(np.float32) - img2.astype(np.float32)
+    ssd = np.sum(diff ** 2)
+    norm_ssd = ssd / (img1.shape[0] * img1.shape[1])
+    return norm_ssd
+
+ssd_nn = normalized_ssd(img_large, zoom_nn)
+ssd_bilinear = normalized_ssd(img_large, zoom_bilinear_img)
+
+print(f"Normalized SSD (Nearest Neighbor): {ssd_nn:.2f}")
+print(f"Normalized SSD (Bilinear): {ssd_bilinear:.2f}")
