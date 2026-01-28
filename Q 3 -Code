@@ -1,13 +1,66 @@
-def hist_equalization(gray):
-    hist, bins = np.histogram(gray.flatten(),256,[0,256])
-    cdf = hist.cumsum()
-    cdf_norm = cdf * 255 / cdf[-1]
-    eq_img = np.interp(gray.flatten(), bins[:-1], cdf_norm)
-    return eq_img.reshape(gray.shape).astype(np.uint8)
+from google.colab import drive
+drive.mount('/content/drive')
 
-gray = cv2.cvtColor((img*255).astype(np.uint8), cv2.COLOR_RGB2GRAY)
-equalized = hist_equalization(gray)
+!git clone https://github.com/DulshanRathnayake/Dulshan.git
 
-plt.imshow(equalized, cmap='gray')
-plt.title("Manual Histogram Equalized")
-plt.axis('off')
+%cd Image-Processing-Assignment-1/
+
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+
+img = cv2.imread("/content/1.jpeg", cv2.IMREAD_GRAYSCALE)
+
+plt.figure(figsize=(5,5))
+plt.imshow(img, cmap='gray')
+plt.title("Original Image")
+plt.axis("off")
+plt.show()
+
+def manual_histogram_equalization(image):
+    """
+    Perform histogram equalization manually on a grayscale image
+    """
+    # Flatten image
+    pixels = image.flatten()
+
+    # Compute histogram (256 gray levels)
+    hist = np.zeros(256)
+    for pixel in pixels:
+        hist[pixel] += 1
+
+    # Normalize histogram to get PDF
+    pdf = hist / pixels.size
+
+    # Compute CDF
+    cdf = np.cumsum(pdf)
+
+    # Create transformation function
+    transform = np.round(255 * cdf).astype(np.uint8)
+
+    # Apply transformation
+    equalized_image = transform[image]
+
+    return equalized_image, hist
+
+img_eq, hist_original = manual_histogram_equalization(img)
+
+plt.figure(figsize=(5,5))
+plt.imshow(img_eq, cmap='gray')
+plt.title("Histogram Equalized Image")
+plt.axis("off")
+plt.show()
+
+plt.figure(figsize=(6,4))
+plt.hist(img.flatten(), bins=256, range=(0,255))
+plt.title("Histogram of Original Image")
+plt.xlabel("Intensity")
+plt.ylabel("Frequency")
+plt.show()
+
+plt.figure(figsize=(6,4))
+plt.hist(img_eq.flatten(), bins=256, range=(0,255))
+plt.title("Histogram of Equalized Image")
+plt.xlabel("Intensity")
+plt.ylabel("Frequency")
+plt.show()
