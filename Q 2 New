@@ -1,0 +1,58 @@
+from google.colab import drive
+drive.mount('/content/drive')
+
+!git clone https://github.com/DulshanRathnayake/Dulshan.git
+
+%cd Image-Processing-Assignment-1/
+
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Load image in grayscale
+img = cv2.imread("/content/1.jpeg", cv2.IMREAD_GRAYSCALE)
+
+# Convert to float and normalize to [0,1]
+img_norm = img.astype(np.float32) / 255.0
+
+plt.figure(figsize=(5,5))
+plt.imshow(img_norm, cmap='gray')
+plt.title("Original Image (Normalized)")
+plt.axis("off")
+plt.show()
+
+gamma_05 = 0.5
+img_gamma_05 = np.power(img_norm, gamma_05)
+
+plt.figure(figsize=(5,5))
+plt.imshow(img_gamma_05, cmap='gray')
+plt.title("Gamma Correction (γ = 0.5)")
+plt.axis("off")
+plt.show()
+
+gamma_2 = 2.0
+img_gamma_2 = np.power(img_norm, gamma_2)
+
+plt.figure(figsize=(5,5))
+plt.imshow(img_gamma_2, cmap='gray')
+plt.title("Gamma Correction (γ = 2)")
+plt.axis("off")
+plt.show()
+
+r1 = 0.2
+r2 = 0.8
+
+# Initialize output image
+img_contrast = np.zeros_like(img_norm)
+
+# Apply piecewise transformation
+img_contrast[img_norm < r1] = 0
+img_contrast[(img_norm >= r1) & (img_norm <= r2)] = \
+    (img_norm[(img_norm >= r1) & (img_norm <= r2)] - r1) / (r2 - r1)
+img_contrast[img_norm > r2] = 1
+
+plt.figure(figsize=(5,5))
+plt.imshow(img_contrast, cmap='gray')
+plt.title("Contrast Stretching")
+plt.axis("off")
+plt.show()
