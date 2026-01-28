@@ -1,3 +1,19 @@
+from google.colab import drive
+drive.mount('/content/drive')
+
+!git clone https://github.com/DulshanRathnayake/Dulshan.git || true
+
+%cd /content/Dulshan
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Read image
+img = cv2.imread('/content/1.jpeg')
+img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB) / 255.0  # normalize
+
+# Convert image to grayscale for filtering
+gray = cv2.cvtColor((img * 255).astype(np.uint8), cv2.COLOR_RGB2GRAY)
 def gaussian_kernel(size, sigma):
     ax = np.linspace(-(size-1)/2., (size-1)/2., size)
     xx, yy = np.meshgrid(ax, ax)
